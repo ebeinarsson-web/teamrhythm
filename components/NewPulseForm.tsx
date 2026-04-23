@@ -72,7 +72,7 @@ export default function NewPulseForm({ teams }: Props) {
 
       {submitted ? (
         <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-          Púls vistaður í mock mode. Bættu við Airtable credentials til að tengja við base.
+          Púls vistaður.
         </p>
       ) : null}
     </form>
