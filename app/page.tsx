@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getOverviewData } from "@/lib/airtable";
 import { formatDateIs } from "@/lib/date-format";
+import { getPulseDisplayTitle } from "@/lib/pulse-display";
 
 const statusLabel: Record<"green" | "yellow" | "red", string> = {
   green: "Græn",
@@ -104,7 +105,7 @@ export default async function HomePage() {
               topAttention.map((pulse) => (
                 <div key={pulse.id} className="rounded-lg border border-slate-200/80 bg-slate-50 px-3 py-2.5">
                   <div className="flex items-start justify-between gap-3">
-                    <p className="line-clamp-1 text-sm font-medium text-slate-900">{pulse.title}</p>
+                    <p className="line-clamp-1 text-sm font-medium text-slate-900">{getPulseDisplayTitle(pulse)}</p>
                     <span
                       className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${statusToneClass[pulse.status]}`}
                     >
@@ -129,7 +130,7 @@ export default async function HomePage() {
               latestPulses.map((pulse) => (
                 <div key={pulse.id} className="rounded-lg border border-slate-200/80 bg-slate-50 px-3 py-2.5">
                   <div className="flex items-start justify-between gap-3">
-                    <p className="line-clamp-1 text-sm font-medium text-slate-900">{pulse.title}</p>
+                    <p className="line-clamp-1 text-sm font-medium text-slate-900">{getPulseDisplayTitle(pulse)}</p>
                     <span
                       className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${statusToneClass[pulse.status]}`}
                     >

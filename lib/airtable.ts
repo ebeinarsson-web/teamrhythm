@@ -63,6 +63,22 @@ function todayIsoDate(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function toTimestamp(value: string): number {
+  if (!value) return 0;
+  const timestamp = new Date(value).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+}
+
+function comparePulsesNewestFirst(a: Pulse, b: Pulse): number {
+  const meetingDiff = toTimestamp(b.meetingDate) - toTimestamp(a.meetingDate);
+  if (meetingDiff !== 0) return meetingDiff;
+
+  const createdDiff = toTimestamp(b.createdDate) - toTimestamp(a.createdDate);
+  if (createdDiff !== 0) return createdDiff;
+
+  return b.id.localeCompare(a.id);
+}
+
 async function fetchAirtableRecords(tableName: string): Promise<AirtableRecord[]> {
   const url = `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${encodeURIComponent(tableName)}`;
   const response = await fetch(url, {
@@ -116,7 +132,7 @@ export async function getTeams(): Promise<Team[]> {
 export async function getPulses(): Promise<Pulse[]> {
   if (!hasAirtableConfig()) {
     console.info("[teamrhythm] Airtable env missing, using mock pulses.");
-    return mockPulses;
+    return [...mockPulses].sort(comparePulsesNewestFirst);
   }
 
   try {
@@ -153,16 +169,16 @@ export async function getPulses(): Promise<Pulse[]> {
       } satisfies Pulse;
     });
 
-    return normalized.sort((a, b) => b.meetingDate.localeCompare(a.meetingDate));
+    return normalized.sort(comparePulsesNewestFirst);
   } catch (error) {
     console.warn("[teamrhythm] Pulse fetch failed, using mock pulses.", error);
-    return mockPulses;
+    return [...mockPulses].sort(comparePulsesNewestFirst);
   }
 }
 
 export async function getOverviewData() {
   const [teams, pulses] = await Promise.all([getTeams(), getPulses()]);
-  const sortedPulses = [...pulses].sort((a, b) => b.meetingDate.localeCompare(a.meetingDate));
+  const sortedPulses = [...pulses].sort(comparePulsesNewestFirst);
   const attentionPulses = sortedPulses.filter((pulse) => pulse.status === STATUS_YELLOW || pulse.status === STATUS_RED);
 
   const statusCounts = {

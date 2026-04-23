@@ -48,7 +48,7 @@ AIRTABLE_BASE_ID=your_airtable_base_id
 ## Included pages
 
 - `/` - yfirlit (heildarfjöldi, stöðuyfirlit, þarfnast athygli, nýjustu púlsar)
-- `/pulsar` - listi af púlsum úr `Puls`
+- `/pulsar` - listi af púlsum úr `Puls` með einfaldri síun eftir teymi, stöðu og leit
 - `/pulsar/nyr` - form sem sendir nýjan púls í Airtable þegar env er virkt
 - `/teymi` - listi af teymum úr `Teymi`
 - `/solutions/teamrhythm` - lausnasíða fyrir TeamRhythm
@@ -63,3 +63,11 @@ AIRTABLE_BASE_ID=your_airtable_base_id
 - Read-only birting á teymum og púlsum úr Airtable með mock fallback.
 - Create flow fyrir nýjan púls (`/pulsar/nyr`).
 - Engin auth, roles, edit eða delete virkni í v1.
+
+## Dagsetningarsnið
+
+- Dagsetningar í birtingu nota íslenskt snið `dd.mm.yyyy`.
+
+## Útgáfunúmer
+
+- Núverandi útgáfa birtist í haus appsins sem `vX.Y.Z` og er lesin úr `package.json`.
