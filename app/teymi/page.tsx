@@ -1,5 +1,7 @@
 import { getPulses, getTeams } from "@/lib/airtable";
 
+export const dynamic = "force-dynamic";
+
 export default async function TeymiPage() {
   const [teams, pulses] = await Promise.all([getTeams(), getPulses()]);
   const pulseCountByTeam = new Map<string, number>();
@@ -11,7 +13,7 @@ export default async function TeymiPage() {
   return (
     <main className="mx-auto max-w-4xl px-4 py-6 sm:py-8">
       <h1 className="text-2xl font-semibold tracking-tight">Teymi</h1>
-      <p className="mt-2 text-sm text-slate-600">Yfirlit yfir teymi í Airtable töflunni `Teymi`.</p>
+      <p className="mt-2 text-sm text-slate-600">Yfirlit yfir teymi og stöðu þeirra.</p>
 
       <div className="mt-6 grid gap-4">
         {teams.length === 0 ? (

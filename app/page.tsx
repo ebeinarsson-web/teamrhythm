@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getOverviewData } from "@/lib/airtable";
+import { formatDateIs } from "@/lib/date-format";
 
 const statusLabel: Record<"green" | "yellow" | "red", string> = {
   green: "Græn",
@@ -12,6 +13,8 @@ const statusToneClass: Record<"green" | "yellow" | "red", string> = {
   yellow: "bg-amber-50 text-amber-700 ring-amber-200",
   red: "bg-rose-50 text-rose-700 ring-rose-200",
 };
+
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const { pulses, attentionPulses, statusCounts, totalPulses } = await getOverviewData();
@@ -109,7 +112,7 @@ export default async function HomePage() {
                     </span>
                   </div>
                   <p className="mt-1 line-clamp-1 text-xs text-slate-600">
-                    {pulse.teamName} - {pulse.meetingDate}
+                    {pulse.teamName} - {formatDateIs(pulse.meetingDate)}
                   </p>
                 </div>
               ))
@@ -134,7 +137,7 @@ export default async function HomePage() {
                     </span>
                   </div>
                   <p className="mt-1 line-clamp-1 text-xs text-slate-600">
-                    {pulse.teamName} - {pulse.meetingDate}
+                    {pulse.teamName} - {formatDateIs(pulse.meetingDate)}
                   </p>
                 </div>
               ))

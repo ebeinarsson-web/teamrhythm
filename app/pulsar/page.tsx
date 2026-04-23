@@ -1,9 +1,10 @@
 import { getPulses, getTeams } from "@/lib/airtable";
+import { formatDateIs } from "@/lib/date-format";
 
 const statusLabel: Record<string, string> = {
-  green: "Grænt",
-  yellow: "Gult",
-  red: "Rautt",
+  green: "Græn",
+  yellow: "Gul",
+  red: "Rauð",
 };
 
 const statusToneClass: Record<string, string> = {
@@ -12,7 +13,15 @@ const statusToneClass: Record<string, string> = {
   red: "bg-rose-50 text-rose-700 ring-rose-200",
 };
 
-export default async function PulsarPage() {
+export const dynamic = "force-dynamic";
+
+export default async function PulsarPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ saved?: string }>;
+}) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const showSavedMessage = resolvedSearchParams?.saved === "1";
   const [pulses, teams] = await Promise.all([getPulses(), getTeams()]);
   const teamById = new Map(teams.map((team) => [team.id, team.name]));
 
@@ -20,6 +29,11 @@ export default async function PulsarPage() {
     <main className="mx-auto max-w-5xl px-4 py-6 sm:py-8">
       <h1 className="text-2xl font-semibold tracking-tight">Púlsar</h1>
       <p className="mt-2 text-sm text-slate-600">Einn púls = ein stöðutaka / fundarfærsla fyrir teymi.</p>
+      {showSavedMessage ? (
+        <p className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+          Púls var vistaður.
+        </p>
+      ) : null}
 
       <div className="mt-6 space-y-4">
         {pulses.length === 0 ? (
@@ -40,7 +54,7 @@ export default async function PulsarPage() {
                 </span>
               </div>
               <p className="mt-1 text-xs text-slate-600 sm:text-sm">
-                {teamById.get(pulse.teamId) ?? pulse.teamName} - {pulse.meetingDate}
+                {teamById.get(pulse.teamId) ?? pulse.teamName} - {formatDateIs(pulse.meetingDate)}
               </p>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 <p className="text-sm text-slate-700">

@@ -1,4 +1,4 @@
-export const TEAMRHYTHM_APP_URL = "https://teamrhythm.einarsson.io";
+export const TEAMRHYTHM_APP_URL = "https://teamrhythm.vercel.app";
 
 export const TEAMRHYTHM_SOLUTION = {
   id: "teamrhythm",

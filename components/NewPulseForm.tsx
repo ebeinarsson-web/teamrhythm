@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Team } from "@/lib/types";
 
 type Props = {
@@ -8,9 +9,9 @@ type Props = {
 };
 
 export default function NewPulseForm({ teams }: Props) {
+  const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const hasTeams = teams.length > 0;
@@ -20,7 +21,6 @@ export default function NewPulseForm({ teams }: Props) {
     if (!hasTeams) return;
 
     setIsSubmitting(true);
-    setSubmitted(false);
     setErrorMessage("");
 
     const form = event.currentTarget;
@@ -50,8 +50,9 @@ export default function NewPulseForm({ teams }: Props) {
         return;
       }
 
-      setSubmitted(true);
       formRef.current?.reset();
+      router.push("/pulsar?saved=1");
+      router.refresh();
     } catch {
       setErrorMessage("Ekki tókst að vista púls í augnablikinu. Vinsamlegast reyndu aftur.");
     } finally {
@@ -202,12 +203,6 @@ export default function NewPulseForm({ teams }: Props) {
       >
         {isSubmitting ? "Sendi..." : "Vista púls"}
       </button>
-
-      {submitted ? (
-        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm text-emerald-800">
-          Púls vistaður.
-        </p>
-      ) : null}
 
       {errorMessage ? (
         <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm text-rose-800">{errorMessage}</p>

@@ -41,6 +41,7 @@ AIRTABLE_BASE_ID=your_airtable_base_id
   - `Fundardagur`
   - `Staða` (`Græn`, `Gul`, `Rauð`)
 - On success, a new record is created in Airtable table `Puls` with linked record in `Teymi`.
+- After successful submit, the user is redirected to `/pulsar` with a lightweight success confirmation.
 - If Airtable env is missing, submit is not performed and user gets a calm message that submission is unavailable in that run.
 - If Airtable create fails, user gets a general error message and detailed error is logged server-side.
 
@@ -51,6 +52,11 @@ AIRTABLE_BASE_ID=your_airtable_base_id
 - `/pulsar/nyr` - form sem sendir nýjan púls í Airtable þegar env er virkt
 - `/teymi` - listi af teymum úr `Teymi`
 - `/solutions/teamrhythm` - lausnasíða fyrir TeamRhythm
+
+## External app URL
+
+- TeamRhythm external app URL is configured in `lib/solution-config.ts` as:
+  - `https://teamrhythm.vercel.app`
 
 ## v1 scope
 
