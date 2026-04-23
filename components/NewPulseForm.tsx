@@ -46,14 +46,14 @@ export default function NewPulseForm({ teams }: Props) {
       const data = (await response.json()) as { ok?: boolean; message?: string };
 
       if (!response.ok || !data.ok) {
-        setErrorMessage(data.message ?? "Ekki tokst ad vista puls. Vinsamlegast reyndu aftur.");
+        setErrorMessage(data.message ?? "Ekki tókst að vista púls. Vinsamlegast reyndu aftur.");
         return;
       }
 
       setSubmitted(true);
       formRef.current?.reset();
     } catch {
-      setErrorMessage("Ekki tokst ad vista puls i augnablikinu. Vinsamlegast reyndu aftur.");
+      setErrorMessage("Ekki tókst að vista púls í augnablikinu. Vinsamlegast reyndu aftur.");
     } finally {
       setIsSubmitting(false);
     }

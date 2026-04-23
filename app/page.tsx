@@ -2,9 +2,9 @@ import Link from "next/link";
 import { getOverviewData } from "@/lib/airtable";
 
 const statusLabel: Record<"green" | "yellow" | "red", string> = {
-  green: "Graen",
+  green: "Græn",
   yellow: "Gul",
-  red: "Raud",
+  red: "Rauð",
 };
 
 const statusToneClass: Record<"green" | "yellow" | "red", string> = {
@@ -72,11 +72,11 @@ export default async function HomePage() {
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
         <article className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Heildarpulsar</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Heildarpúlsar</p>
           <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{totalPulses}</p>
         </article>
         <article className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Graen</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Græn</p>
           <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{statusCounts.green}</p>
         </article>
         <article className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-5">
@@ -84,18 +84,18 @@ export default async function HomePage() {
           <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{statusCounts.yellow}</p>
         </article>
         <article className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Raud</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Rauð</p>
           <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{statusCounts.red}</p>
         </article>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 sm:gap-5">
         <article className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-5">
-          <h2 className="text-base font-semibold tracking-tight text-slate-900 sm:text-lg">Tharfnast athygli</h2>
+          <h2 className="text-base font-semibold tracking-tight text-slate-900 sm:text-lg">Þarfnast athygli</h2>
           <div className="mt-3 space-y-3">
             {topAttention.length === 0 ? (
               <p className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
-                Engir pulsar i gulri eða raudri stodu nuna.
+                Engir púlsar í gulri eða rauðri stöðu núna.
               </p>
             ) : (
               topAttention.map((pulse) => (
@@ -118,10 +118,10 @@ export default async function HomePage() {
         </article>
 
         <article className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm sm:p-5">
-          <h2 className="text-base font-semibold tracking-tight text-slate-900 sm:text-lg">Nyjustu pulsar</h2>
+          <h2 className="text-base font-semibold tracking-tight text-slate-900 sm:text-lg">Nýjustu púlsar</h2>
           <div className="mt-3 space-y-3">
             {latestPulses.length === 0 ? (
-              <p className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">Engar pulsfaerslur fundust.</p>
+              <p className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">Engar púlsfærslur fundust.</p>
             ) : (
               latestPulses.map((pulse) => (
                 <div key={pulse.id} className="rounded-lg border border-slate-200/80 bg-slate-50 px-3 py-2.5">

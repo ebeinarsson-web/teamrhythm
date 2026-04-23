@@ -30,16 +30,16 @@ export default async function TeymiPage() {
                       : "bg-slate-100 text-slate-700 ring-slate-200"
                   }`}
                 >
-                  {team.isActive ? "Virkt" : "Ovirkt"}
+                  {team.isActive ? "Virkt" : "Óvirkt"}
                 </span>
               </div>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 <p className="text-sm text-slate-700">
-                  <span className="font-medium text-slate-900">Tengilidur:</span> {team.contact || "Ekki skrad"}
+                  <span className="font-medium text-slate-900">Tengiliður:</span> {team.contact || "Ekki skráð"}
                 </p>
                 <p className="text-sm text-slate-700">
                   <span className="font-medium text-slate-900">Fundartaktur:</span>{" "}
-                  {team.meetingCadence || "Ekki skrad"}
+                  {team.meetingCadence || "Ekki skráð"}
                 </p>
               </div>
               {team.notes ? (
@@ -48,7 +48,7 @@ export default async function TeymiPage() {
                 </p>
               ) : null}
               <p className="mt-3 text-xs font-medium uppercase tracking-[0.08em] text-slate-500 sm:text-sm sm:normal-case sm:tracking-normal">
-                Skradir pulsar: {pulseCountByTeam.get(team.id) ?? 0}
+                Skráðir púlsar: {pulseCountByTeam.get(team.id) ?? 0}
               </p>
             </article>
           ))

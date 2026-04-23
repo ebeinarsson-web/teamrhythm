@@ -28,14 +28,14 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       ok: true,
-      message: "Puls var vistaður.",
+      message: "Púls var vistaður.",
     });
   } catch (error) {
     console.error("[teamrhythm] Invalid pulse create request.", error);
     return NextResponse.json(
       {
         ok: false,
-        message: "Ekki tokst ad vinna innsendingu. Vinsamlegast reyndu aftur.",
+        message: "Ekki tókst að vinna innsendingu. Vinsamlegast reyndu aftur.",
       },
       { status: 400 },
     );

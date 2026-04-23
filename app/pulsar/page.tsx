@@ -24,7 +24,7 @@ export default async function PulsarPage() {
       <div className="mt-6 space-y-4">
         {pulses.length === 0 ? (
           <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-600">Engar pulsfaerslur fundust.</p>
+            <p className="text-sm text-slate-600">Engar púlsfærslur fundust.</p>
           </article>
         ) : (
           pulses.map((pulse) => (
@@ -44,20 +44,20 @@ export default async function PulsarPage() {
               </p>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 <p className="text-sm text-slate-700">
-                  <strong>Helstu markmid:</strong>{" "}
-                  <span className="line-clamp-2 align-top">{pulse.goals || "Ekki skrad"}</span>
+                  <strong>Helstu markmið:</strong>{" "}
+                  <span className="line-clamp-2 align-top">{pulse.goals || "Ekki skráð"}</span>
                 </p>
                 <p className="text-sm text-slate-700">
-                  <strong>Hvad tefur framvindu:</strong>{" "}
-                  <span className="line-clamp-2 align-top">{pulse.blockers || "Ekki skrad"}</span>
+                  <strong>Hvað tefur framvindu:</strong>{" "}
+                  <span className="line-clamp-2 align-top">{pulse.blockers || "Ekki skráð"}</span>
                 </p>
               </div>
               <p className="mt-2 text-sm text-slate-700">
-                <strong>Naestu skref:</strong>{" "}
-                <span className="line-clamp-2 align-top">{pulse.nextSteps || "Ekki skrad"}</span>
+                <strong>Næstu skref:</strong>{" "}
+                <span className="line-clamp-2 align-top">{pulse.nextSteps || "Ekki skráð"}</span>
               </p>
               <p className="mt-2 text-xs text-slate-500 sm:text-sm">
-                <strong>Sent inn af:</strong> {pulse.submittedBy || "Ekki skrad"}
+                <strong>Sent inn af:</strong> {pulse.submittedBy || "Ekki skráð"}
               </p>
             </article>
           ))

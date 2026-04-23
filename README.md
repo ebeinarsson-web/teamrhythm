@@ -46,8 +46,14 @@ AIRTABLE_BASE_ID=your_airtable_base_id
 
 ## Included pages
 
-- `/` - yfirlit (heildarfjoldi, staduyfirlit, tharfnast athygli, nyjustu pulsar)
-- `/pulsar` - listi af pulsum ur `Puls`
-- `/pulsar/nyr` - einfalt form (ekki tengt submit i Airtable enn)
-- `/teymi` - listi af teymum ur `Teymi`
-- `/solutions/teamrhythm` - lausnasida fyrir TeamRhythm
+- `/` - yfirlit (heildarfjöldi, stöðuyfirlit, þarfnast athygli, nýjustu púlsar)
+- `/pulsar` - listi af púlsum úr `Puls`
+- `/pulsar/nyr` - form sem sendir nýjan púls í Airtable þegar env er virkt
+- `/teymi` - listi af teymum úr `Teymi`
+- `/solutions/teamrhythm` - lausnasíða fyrir TeamRhythm
+
+## v1 scope
+
+- Read-only birting á teymum og púlsum úr Airtable með mock fallback.
+- Create flow fyrir nýjan púls (`/pulsar/nyr`).
+- Engin auth, roles, edit eða delete virkni í v1.

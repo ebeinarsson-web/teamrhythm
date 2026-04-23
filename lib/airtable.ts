@@ -101,9 +101,9 @@ export async function getTeams(): Promise<Team[]> {
     const records = await fetchAirtableRecords(TEAMS_TABLE);
     return records.map((record) => ({
       id: record.id,
-      name: toText(record.fields["Teymi"]) || "Onefnt teymi",
+      name: toText(record.fields["Teymi"]) || "Ónefnt teymi",
       isActive: toBoolean(record.fields["Virkt"]),
-      contact: toText(record.fields["Tengiliður"]) || "Oskrad",
+      contact: toText(record.fields["Tengiliður"]) || "Óskráð",
       meetingCadence: toText(record.fields["Fundartaktur"]) || "Ekki skilgreint",
       notes: toText(record.fields["Athugasemdir"]),
     }));
@@ -125,7 +125,7 @@ export async function getPulses(): Promise<Pulse[]> {
       fetchAirtableRecords(PULSE_TABLE),
     ]);
     const teamById = new Map<string, string>(
-      teamRecords.map((team) => [team.id, toText(team.fields["Teymi"]) || "Othekkt teymi"]),
+      teamRecords.map((team) => [team.id, toText(team.fields["Teymi"]) || "Óþekkt teymi"]),
     );
 
     const normalized = pulseRecords.map((record) => {
@@ -138,9 +138,9 @@ export async function getPulses(): Promise<Pulse[]> {
 
       return {
         id: record.id,
-        title: toText(record.fields["Púls"]) || `Puls ${meetingDate}`,
+        title: toText(record.fields["Púls"]) || `Púls ${meetingDate}`,
         teamId: linkedTeamId || "unknown",
-        teamName: linkedTeamName || fallbackTeamField || "Othekkt teymi",
+        teamName: linkedTeamName || fallbackTeamField || "Óþekkt teymi",
         createdDate,
         meetingDate,
         status: normalizeStatus(toText(record.fields["Staða"])),
@@ -193,7 +193,7 @@ export async function createPulse(input: NewPulseInput): Promise<CreatePulseResu
   if (!hasAirtableConfig()) {
     return {
       ok: false,
-      message: "Innsending er ekki virk i thessari keyrslu. Vinsamlegast reyndu aftur i virku umhverfi.",
+      message: "Innsending er ekki virk í þessari keyrslu. Vinsamlegast reyndu aftur í virku umhverfi.",
     };
   }
 
@@ -204,7 +204,7 @@ export async function createPulse(input: NewPulseInput): Promise<CreatePulseResu
     );
 
     if (!matchingTeam) {
-      return { ok: false, message: "Ekki tokst ad finna valid teymi fyrir innsendingu." };
+      return { ok: false, message: "Ekki tókst að finna gilt teymi fyrir innsendingu." };
     }
 
     const url = `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${encodeURIComponent(PULSE_TABLE)}`;
@@ -239,7 +239,7 @@ export async function createPulse(input: NewPulseInput): Promise<CreatePulseResu
     console.error("[teamrhythm] Pulse create failed.", error);
     return {
       ok: false,
-      message: "Ekki tokst ad vista puls i augnablikinu. Vinsamlegast reyndu aftur.",
+      message: "Ekki tókst að vista púls í augnablikinu. Vinsamlegast reyndu aftur.",
     };
   }
 }
