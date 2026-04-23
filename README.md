@@ -50,7 +50,7 @@ AIRTABLE_BASE_ID=your_airtable_base_id
 - `/` - yfirlit (heildarfjöldi, stöðuyfirlit, þarfnast athygli, nýjustu púlsar)
 - `/pulsar` - listi af púlsum úr `Puls` með einfaldri síun eftir teymi, stöðu og leit
 - `/pulsar/nyr` - form sem sendir nýjan púls í Airtable þegar env er virkt
-- `/teymi` - listi af teymum úr `Teymi`
+- `/teymi` - listi af teymum úr `Teymi` með beinni leið í síaða púlsa (`/pulsar?team=...`)
 - `/solutions/teamrhythm` - lausnasíða fyrir TeamRhythm
 
 ## External app URL
