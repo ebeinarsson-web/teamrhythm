@@ -9,7 +9,7 @@ export default function HomePage() {
           Regluleg stöðutaka sem skýrir stöðu, hindranir og næstu skref
         </h1>
         <p className="mt-3 max-w-3xl text-slate-600">
-          TeamRhythm er einfalt vefapp fyrir reglulega stöðutöku teymis. Þetta er minimal keyranleg grunnútgáfa með
+          TeamRhythm er einfalt vefapp fyrir reglulega stöðutöku teymis. Þetta er minnsta keyranlega grunnútgáfa með
           mock fallback fyrir Airtable.
         </p>
       </section>
