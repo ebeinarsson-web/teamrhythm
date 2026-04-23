@@ -62,11 +62,11 @@ export default function NewPulseForm({ teams }: Props) {
   return (
     <form
       ref={formRef}
-      className="space-y-4 rounded-xl border border-slate-200 bg-white p-5"
+      className="space-y-5 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-sm sm:space-y-6 sm:p-6"
       onSubmit={handleSubmit}
     >
       <div>
-        <label htmlFor="team" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="team" className="mb-1.5 block text-sm font-medium text-slate-800">
           Teymi
         </label>
         <select
@@ -74,7 +74,7 @@ export default function NewPulseForm({ teams }: Props) {
           name="team"
           required
           disabled={!hasTeams || isSubmitting}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 disabled:bg-slate-100"
         >
           <option value="">Veldu teymi</option>
           {teams.map((team) => (
@@ -86,7 +86,7 @@ export default function NewPulseForm({ teams }: Props) {
       </div>
 
       <div>
-        <label htmlFor="meetingDate" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="meetingDate" className="mb-1.5 block text-sm font-medium text-slate-800">
           Fundardagur
         </label>
         <input
@@ -95,12 +95,12 @@ export default function NewPulseForm({ teams }: Props) {
           type="date"
           required
           disabled={isSubmitting}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 disabled:bg-slate-100"
         />
       </div>
 
       <div>
-        <label htmlFor="status" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="status" className="mb-1.5 block text-sm font-medium text-slate-800">
           Staða
         </label>
         <select
@@ -108,7 +108,7 @@ export default function NewPulseForm({ teams }: Props) {
           name="status"
           required
           disabled={isSubmitting}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 disabled:bg-slate-100"
         >
           <option value="">Veldu stöðu</option>
           <option value="Græn">Græn</option>
@@ -118,7 +118,7 @@ export default function NewPulseForm({ teams }: Props) {
       </div>
 
       <div>
-        <label htmlFor="goals" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="goals" className="mb-1.5 block text-sm font-medium text-slate-800">
           Helstu markmið
         </label>
         <textarea
@@ -126,12 +126,12 @@ export default function NewPulseForm({ teams }: Props) {
           name="goals"
           rows={3}
           disabled={isSubmitting}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 disabled:bg-slate-100"
         />
       </div>
 
       <div>
-        <label htmlFor="wins" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="wins" className="mb-1.5 block text-sm font-medium text-slate-800">
           Hvað gekk vel
         </label>
         <textarea
@@ -139,12 +139,12 @@ export default function NewPulseForm({ teams }: Props) {
           name="wins"
           rows={3}
           disabled={isSubmitting}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 disabled:bg-slate-100"
         />
       </div>
 
       <div>
-        <label htmlFor="blockers" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="blockers" className="mb-1.5 block text-sm font-medium text-slate-800">
           Hindranir
         </label>
         <textarea
@@ -152,12 +152,12 @@ export default function NewPulseForm({ teams }: Props) {
           name="blockers"
           rows={3}
           disabled={isSubmitting}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 disabled:bg-slate-100"
         />
       </div>
 
       <div>
-        <label htmlFor="decisionsNeeded" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="decisionsNeeded" className="mb-1.5 block text-sm font-medium text-slate-800">
           Hvaða ákvarðanir eða stuðning vantar
         </label>
         <textarea
@@ -165,12 +165,12 @@ export default function NewPulseForm({ teams }: Props) {
           name="decisionsNeeded"
           rows={3}
           disabled={isSubmitting}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 disabled:bg-slate-100"
         />
       </div>
 
       <div>
-        <label htmlFor="nextSteps" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="nextSteps" className="mb-1.5 block text-sm font-medium text-slate-800">
           Næstu skref
         </label>
         <textarea
@@ -178,12 +178,12 @@ export default function NewPulseForm({ teams }: Props) {
           name="nextSteps"
           rows={3}
           disabled={isSubmitting}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 disabled:bg-slate-100"
         />
       </div>
 
       <div>
-        <label htmlFor="submittedBy" className="mb-1 block text-sm font-medium text-slate-700">
+        <label htmlFor="submittedBy" className="mb-1.5 block text-sm font-medium text-slate-800">
           Sent inn af
         </label>
         <input
@@ -191,28 +191,30 @@ export default function NewPulseForm({ teams }: Props) {
           name="submittedBy"
           type="text"
           disabled={isSubmitting}
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 disabled:bg-slate-100"
         />
       </div>
 
       <button
         type="submit"
         disabled={isSubmitting || !hasTeams}
-        className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
+        className="inline-flex min-h-11 items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
       >
         {isSubmitting ? "Sendi..." : "Vista púls"}
       </button>
 
       {submitted ? (
-        <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+        <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm text-emerald-800">
           Púls vistaður.
         </p>
       ) : null}
 
-      {errorMessage ? <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-800">{errorMessage}</p> : null}
+      {errorMessage ? (
+        <p className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2.5 text-sm text-rose-800">{errorMessage}</p>
+      ) : null}
 
       {!hasTeams ? (
-        <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-800">
           Ekki er hægt að senda inn púls í þessari keyrslu.
         </p>
       ) : null}

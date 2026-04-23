@@ -9,3 +9,19 @@
 body {
   @apply bg-slate-50 text-slate-900;
 }
+
+a,
+button,
+input,
+select,
+textarea {
+  @apply outline-none;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  @apply ring-2 ring-slate-300 ring-offset-2 ring-offset-slate-50;
+}
