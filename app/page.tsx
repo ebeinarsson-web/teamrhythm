@@ -1,6 +1,17 @@
 import Link from "next/link";
+import { getOverviewData } from "@/lib/airtable";
 
-export default function HomePage() {
+const statusLabel: Record<"green" | "yellow" | "red", string> = {
+  green: "Graen",
+  yellow: "Gul",
+  red: "Raud",
+};
+
+export default async function HomePage() {
+  const { pulses, attentionPulses, statusCounts, totalPulses } = await getOverviewData();
+  const latestPulses = pulses.slice(0, 5);
+  const topAttention = attentionPulses.slice(0, 5);
+
   return (
     <main className="mx-auto max-w-5xl space-y-10 px-4 py-10 sm:space-y-12 sm:py-12">
       <section className="rounded-2xl border border-slate-200/80 bg-white px-6 py-8 shadow-sm sm:px-8 sm:py-10">
@@ -51,6 +62,63 @@ export default function HomePage() {
             Kynntu þér TeamRhythm og hvernig lausnin styður reglulega stöðutöku.
           </p>
         </Link>
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-4 sm:gap-5">
+        <article className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Heildarpulsar</p>
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{totalPulses}</p>
+        </article>
+        <article className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Graen</p>
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{statusCounts.green}</p>
+        </article>
+        <article className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Gul</p>
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{statusCounts.yellow}</p>
+        </article>
+        <article className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Raud</p>
+          <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{statusCounts.red}</p>
+        </article>
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-2 sm:gap-5">
+        <article className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-semibold tracking-tight text-slate-900">Tharfnast athygli</h2>
+          <div className="mt-3 space-y-3">
+            {topAttention.length === 0 ? (
+              <p className="text-sm text-slate-600">Engir pulsar i gulri eða raudri stodu nuna.</p>
+            ) : (
+              topAttention.map((pulse) => (
+                <div key={pulse.id} className="rounded-lg border border-slate-200/80 bg-slate-50 px-3 py-2">
+                  <p className="text-sm font-medium text-slate-900">{pulse.title}</p>
+                  <p className="mt-1 text-xs text-slate-600">
+                    {pulse.teamName} - {pulse.meetingDate} - {statusLabel[pulse.status]}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </article>
+
+        <article className="rounded-xl border border-slate-200/80 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-semibold tracking-tight text-slate-900">Nyjustu pulsar</h2>
+          <div className="mt-3 space-y-3">
+            {latestPulses.length === 0 ? (
+              <p className="text-sm text-slate-600">Engar pulsfaerslur fundust.</p>
+            ) : (
+              latestPulses.map((pulse) => (
+                <div key={pulse.id} className="rounded-lg border border-slate-200/80 bg-slate-50 px-3 py-2">
+                  <p className="text-sm font-medium text-slate-900">{pulse.title}</p>
+                  <p className="mt-1 text-xs text-slate-600">
+                    {pulse.teamName} - {pulse.meetingDate} - {statusLabel[pulse.status]}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </article>
       </section>
     </main>
   );

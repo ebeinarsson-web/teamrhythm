@@ -1,4 +1,4 @@
-import type { NewPulseInput, Pulse, Team } from "@/lib/types";
+import type { Pulse, Team } from "@/lib/types";
 import { mockPulses, mockTeams } from "@/lib/mock-data";
 
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
@@ -6,6 +6,9 @@ const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN;
 const AIRTABLE_API_URL = "https://api.airtable.com/v0";
 const TEAMS_TABLE = "Teymi";
 const PULSE_TABLE = "Puls";
+const STATUS_GREEN = "green";
+const STATUS_YELLOW = "yellow";
+const STATUS_RED = "red";
 
 function hasAirtableConfig() {
   return Boolean(AIRTABLE_BASE_ID && AIRTABLE_TOKEN);
@@ -18,86 +21,141 @@ function authHeaders() {
   };
 }
 
+type AirtableValue = string | number | boolean | string[] | null | undefined;
+type AirtableRecord = { id: string; fields: Record<string, AirtableValue> };
+
+function toText(value: AirtableValue): string {
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "number") return String(value);
+  if (typeof value === "boolean") return value ? "true" : "false";
+  return "";
+}
+
+function toLinkedIds(value: AirtableValue): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === "string");
+}
+
+function toBoolean(value: AirtableValue): boolean {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") {
+    const normalized = value.toLowerCase().trim();
+    return normalized === "true" || normalized === "ja" || normalized === "já" || normalized === "virkt";
+  }
+  if (typeof value === "number") return value > 0;
+  return false;
+}
+
+function normalizeStatus(value: string): Pulse["status"] {
+  const normalized = value.toLowerCase().trim();
+  if (normalized === "green" || normalized === "graen" || normalized === "græn") return STATUS_GREEN;
+  if (normalized === "red" || normalized === "raud" || normalized === "rauð") return STATUS_RED;
+  if (normalized === "yellow" || normalized === "gul" || normalized === "gult") return STATUS_YELLOW;
+  return STATUS_YELLOW;
+}
+
+function todayIsoDate(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+async function fetchAirtableRecords(tableName: string): Promise<AirtableRecord[]> {
+  const url = `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${encodeURIComponent(tableName)}`;
+  const response = await fetch(url, {
+    headers: authHeaders(),
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    throw new Error(`Airtable request failed for table ${tableName}: ${response.status}`);
+  }
+  const payload = (await response.json()) as { records?: AirtableRecord[] };
+  return payload.records ?? [];
+}
+
 export async function getTeams(): Promise<Team[]> {
-  if (!hasAirtableConfig()) return mockTeams;
+  if (!hasAirtableConfig()) {
+    console.info("[teamrhythm] Airtable env missing, using mock teams.");
+    return mockTeams;
+  }
 
   try {
-    const url = `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${encodeURIComponent(TEAMS_TABLE)}`;
-    const res = await fetch(url, { headers: authHeaders(), cache: "no-store" });
-    if (!res.ok) throw new Error("Failed Airtable team fetch");
-    const payload = (await res.json()) as {
-      records: Array<{ id: string; fields: Record<string, string> }>;
-    };
-    return payload.records.map((record) => ({
+    const records = await fetchAirtableRecords(TEAMS_TABLE);
+    return records.map((record) => ({
       id: record.id,
-      name: record.fields.Name ?? record.fields.Heiti ?? "Ónefnt teymi",
-      lead: record.fields.Lead ?? record.fields.Abyrgðaraðili ?? "Óskráð",
+      name: toText(record.fields["Teymi"]) || "Onefnt teymi",
+      isActive: toBoolean(record.fields["Virkt"]),
+      contact: toText(record.fields["Tengiliður"]) || "Oskrad",
+      meetingCadence: toText(record.fields["Fundartaktur"]) || "Ekki skilgreint",
+      notes: toText(record.fields["Athugasemdir"]),
     }));
-  } catch {
+  } catch (error) {
+    console.warn("[teamrhythm] Team fetch failed, using mock teams.", error);
     return mockTeams;
   }
 }
 
 export async function getPulses(): Promise<Pulse[]> {
-  if (!hasAirtableConfig()) return mockPulses;
+  if (!hasAirtableConfig()) {
+    console.info("[teamrhythm] Airtable env missing, using mock pulses.");
+    return mockPulses;
+  }
 
   try {
-    const url = `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${encodeURIComponent(PULSE_TABLE)}`;
-    const res = await fetch(url, { headers: authHeaders(), cache: "no-store" });
-    if (!res.ok) throw new Error("Failed Airtable pulse fetch");
-    const payload = (await res.json()) as {
-      records: Array<{ id: string; fields: Record<string, string> }>;
-    };
-    return payload.records.map((record) => ({
-      id: record.id,
-      teamId: record.fields.TeamId ?? "unknown",
-      date: record.fields.Date ?? new Date().toISOString().slice(0, 10),
-      status: (record.fields.Status as Pulse["status"]) ?? "yellow",
-      blockers: record.fields.Blockers ?? "",
-      nextSteps: record.fields.NextSteps ?? "",
-      summary: record.fields.Summary ?? "",
-    }));
-  } catch {
+    const [teamRecords, pulseRecords] = await Promise.all([
+      fetchAirtableRecords(TEAMS_TABLE),
+      fetchAirtableRecords(PULSE_TABLE),
+    ]);
+    const teamById = new Map<string, string>(
+      teamRecords.map((team) => [team.id, toText(team.fields["Teymi"]) || "Othekkt teymi"]),
+    );
+
+    const normalized = pulseRecords.map((record) => {
+      const linkedTeamIds = toLinkedIds(record.fields["Teymi"]);
+      const linkedTeamId = linkedTeamIds[0] ?? "";
+      const linkedTeamName = linkedTeamId ? teamById.get(linkedTeamId) : undefined;
+      const fallbackTeamField = toText(record.fields["Teymi"]);
+      const createdDate = toText(record.fields["Skráð dags."]) || todayIsoDate();
+      const meetingDate = toText(record.fields["Fundardagur"]) || createdDate;
+
+      return {
+        id: record.id,
+        title: toText(record.fields["Púls"]) || `Puls ${meetingDate}`,
+        teamId: linkedTeamId || "unknown",
+        teamName: linkedTeamName || fallbackTeamField || "Othekkt teymi",
+        createdDate,
+        meetingDate,
+        status: normalizeStatus(toText(record.fields["Staða"])),
+        goals: toText(record.fields["Helstu markmið"]),
+        wins: toText(record.fields["Hvað gekk vel"]),
+        blockers: toText(record.fields["Hvað tefur framvindu"]),
+        decisionsNeeded: toText(record.fields["Hvaða ákvarðanir eða stuðning vantar"]),
+        nextSteps: toText(record.fields["Næstu skref"]),
+        submittedBy: toText(record.fields["Sent inn af"]),
+      } satisfies Pulse;
+    });
+
+    return normalized.sort((a, b) => b.meetingDate.localeCompare(a.meetingDate));
+  } catch (error) {
+    console.warn("[teamrhythm] Pulse fetch failed, using mock pulses.", error);
     return mockPulses;
   }
 }
 
-export async function createPulse(input: NewPulseInput): Promise<Pulse> {
-  const pulse: Pulse = {
-    id: `local-${Date.now()}`,
-    teamId: input.teamId,
-    date: new Date().toISOString().slice(0, 10),
-    status: input.status,
-    blockers: input.blockers,
-    nextSteps: input.nextSteps,
-    summary: input.summary,
+export async function getOverviewData() {
+  const [teams, pulses] = await Promise.all([getTeams(), getPulses()]);
+  const sortedPulses = [...pulses].sort((a, b) => b.meetingDate.localeCompare(a.meetingDate));
+  const attentionPulses = sortedPulses.filter((pulse) => pulse.status === STATUS_YELLOW || pulse.status === STATUS_RED);
+
+  const statusCounts = {
+    green: pulses.filter((pulse) => pulse.status === STATUS_GREEN).length,
+    yellow: pulses.filter((pulse) => pulse.status === STATUS_YELLOW).length,
+    red: pulses.filter((pulse) => pulse.status === STATUS_RED).length,
   };
 
-  if (!hasAirtableConfig()) return pulse;
-
-  try {
-    const url = `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${encodeURIComponent(PULSE_TABLE)}`;
-    await fetch(url, {
-      method: "POST",
-      headers: authHeaders(),
-      body: JSON.stringify({
-        records: [
-          {
-            fields: {
-              TeamId: input.teamId,
-              Date: pulse.date,
-              Status: input.status,
-              Blockers: input.blockers,
-              NextSteps: input.nextSteps,
-              Summary: input.summary,
-            },
-          },
-        ],
-      }),
-    });
-  } catch {
-    return pulse;
-  }
-
-  return pulse;
+  return {
+    teams,
+    pulses: sortedPulses,
+    attentionPulses,
+    statusCounts,
+    totalPulses: pulses.length,
+  };
 }

@@ -1,17 +1,26 @@
 export type Team = {
   id: string;
   name: string;
-  lead: string;
+  isActive: boolean;
+  contact: string;
+  meetingCadence: string;
+  notes: string;
 };
 
 export type Pulse = {
   id: string;
+  title: string;
   teamId: string;
-  date: string;
+  teamName: string;
+  createdDate: string;
+  meetingDate: string;
   status: "green" | "yellow" | "red";
+  goals: string;
+  wins: string;
   blockers: string;
+  decisionsNeeded: string;
   nextSteps: string;
-  summary: string;
+  submittedBy: string;
 };
 
 export type NewPulseInput = {
