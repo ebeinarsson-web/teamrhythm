@@ -1,4 +1,4 @@
-import type { Pulse, Team } from "@/lib/types";
+import type { NewPulseInput, Pulse, PulseFormStatus, Team } from "@/lib/types";
 import { mockPulses, mockTeams } from "@/lib/mock-data";
 
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
@@ -54,6 +54,11 @@ function normalizeStatus(value: string): Pulse["status"] {
   return STATUS_YELLOW;
 }
 
+function mapFormStatusToAirtable(status: PulseFormStatus): PulseFormStatus {
+  if (status === "Græn" || status === "Gul" || status === "Rauð") return status;
+  return "Gul";
+}
+
 function todayIsoDate(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -69,6 +74,21 @@ async function fetchAirtableRecords(tableName: string): Promise<AirtableRecord[]
   }
   const payload = (await response.json()) as { records?: AirtableRecord[] };
   return payload.records ?? [];
+}
+
+function isValidDateInput(value: string): boolean {
+  if (!value) return false;
+  const date = new Date(value);
+  return !Number.isNaN(date.getTime());
+}
+
+function validatePulseInput(input: NewPulseInput): string | null {
+  if (!input.teamId.trim()) return "Veldu teymi.";
+  if (!isValidDateInput(input.meetingDate)) return "Fundardagur þarf að vera gilt dagsetning.";
+  if (!["Græn", "Gul", "Rauð"].includes(input.status)) {
+    return "Staða þarf að vera Græn, Gul eða Rauð.";
+  }
+  return null;
 }
 
 export async function getTeams(): Promise<Team[]> {
@@ -158,4 +178,68 @@ export async function getOverviewData() {
     statusCounts,
     totalPulses: pulses.length,
   };
+}
+
+export type CreatePulseResult =
+  | { ok: true; mode: "airtable" | "mock" }
+  | { ok: false; message: string };
+
+export async function createPulse(input: NewPulseInput): Promise<CreatePulseResult> {
+  const validationError = validatePulseInput(input);
+  if (validationError) {
+    return { ok: false, message: validationError };
+  }
+
+  if (!hasAirtableConfig()) {
+    return {
+      ok: false,
+      message: "Innsending er ekki virk i thessari keyrslu. Vinsamlegast reyndu aftur i virku umhverfi.",
+    };
+  }
+
+  try {
+    const teamRecords = await fetchAirtableRecords(TEAMS_TABLE);
+    const matchingTeam = teamRecords.find(
+      (record) => record.id === input.teamId || toText(record.fields["Teymi"]) === input.teamId,
+    );
+
+    if (!matchingTeam) {
+      return { ok: false, message: "Ekki tokst ad finna valid teymi fyrir innsendingu." };
+    }
+
+    const url = `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${encodeURIComponent(PULSE_TABLE)}`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        records: [
+          {
+            fields: {
+              Teymi: [matchingTeam.id],
+              "Fundardagur": input.meetingDate,
+              "Staða": mapFormStatusToAirtable(input.status),
+              "Helstu markmið": input.goals,
+              "Hvað gekk vel": input.wins,
+              "Hvað tefur framvindu": input.blockers,
+              "Hvaða ákvarðanir eða stuðning vantar": input.decisionsNeeded,
+              "Næstu skref": input.nextSteps,
+              "Sent inn af": input.submittedBy,
+            },
+          },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Airtable create failed: ${response.status}`);
+    }
+
+    return { ok: true, mode: "airtable" };
+  } catch (error) {
+    console.error("[teamrhythm] Pulse create failed.", error);
+    return {
+      ok: false,
+      message: "Ekki tokst ad vista puls i augnablikinu. Vinsamlegast reyndu aftur.",
+    };
+  }
 }

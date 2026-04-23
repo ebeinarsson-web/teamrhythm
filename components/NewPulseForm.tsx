@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Team } from "@/lib/types";
 
 type Props = {
@@ -8,21 +8,75 @@ type Props = {
 };
 
 export default function NewPulseForm({ teams }: Props) {
+  const formRef = useRef<HTMLFormElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const hasTeams = teams.length > 0;
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!hasTeams) return;
+
+    setIsSubmitting(true);
+    setSubmitted(false);
+    setErrorMessage("");
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const payload = {
+      teamId: String(formData.get("team") ?? ""),
+      meetingDate: String(formData.get("meetingDate") ?? ""),
+      status: String(formData.get("status") ?? ""),
+      goals: String(formData.get("goals") ?? ""),
+      wins: String(formData.get("wins") ?? ""),
+      blockers: String(formData.get("blockers") ?? ""),
+      decisionsNeeded: String(formData.get("decisionsNeeded") ?? ""),
+      nextSteps: String(formData.get("nextSteps") ?? ""),
+      submittedBy: String(formData.get("submittedBy") ?? ""),
+    };
+
+    try {
+      const response = await fetch("/api/pulsar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await response.json()) as { ok?: boolean; message?: string };
+
+      if (!response.ok || !data.ok) {
+        setErrorMessage(data.message ?? "Ekki tokst ad vista puls. Vinsamlegast reyndu aftur.");
+        return;
+      }
+
+      setSubmitted(true);
+      formRef.current?.reset();
+    } catch {
+      setErrorMessage("Ekki tokst ad vista puls i augnablikinu. Vinsamlegast reyndu aftur.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <form
+      ref={formRef}
       className="space-y-4 rounded-xl border border-slate-200 bg-white p-5"
-      onSubmit={(event) => {
-        event.preventDefault();
-        setSubmitted(true);
-      }}
+      onSubmit={handleSubmit}
     >
       <div>
         <label htmlFor="team" className="mb-1 block text-sm font-medium text-slate-700">
           Teymi
         </label>
-        <select id="team" name="team" className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+        <select
+          id="team"
+          name="team"
+          required
+          disabled={!hasTeams || isSubmitting}
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+        >
+          <option value="">Veldu teymi</option>
           {teams.map((team) => (
             <option key={team.id} value={team.id}>
               {team.name}
@@ -32,47 +86,134 @@ export default function NewPulseForm({ teams }: Props) {
       </div>
 
       <div>
+        <label htmlFor="meetingDate" className="mb-1 block text-sm font-medium text-slate-700">
+          Fundardagur
+        </label>
+        <input
+          id="meetingDate"
+          name="meetingDate"
+          type="date"
+          required
+          disabled={isSubmitting}
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+        />
+      </div>
+
+      <div>
         <label htmlFor="status" className="mb-1 block text-sm font-medium text-slate-700">
           Staða
         </label>
-        <select id="status" name="status" className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
-          <option value="green">Grænt</option>
-          <option value="yellow">Gult</option>
-          <option value="red">Rautt</option>
+        <select
+          id="status"
+          name="status"
+          required
+          disabled={isSubmitting}
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+        >
+          <option value="">Veldu stöðu</option>
+          <option value="Græn">Græn</option>
+          <option value="Gul">Gul</option>
+          <option value="Rauð">Rauð</option>
         </select>
       </div>
 
       <div>
-        <label htmlFor="summary" className="mb-1 block text-sm font-medium text-slate-700">
-          Stutt samantekt
+        <label htmlFor="goals" className="mb-1 block text-sm font-medium text-slate-700">
+          Helstu markmið
         </label>
-        <textarea id="summary" name="summary" rows={3} className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
+        <textarea
+          id="goals"
+          name="goals"
+          rows={3}
+          disabled={isSubmitting}
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="wins" className="mb-1 block text-sm font-medium text-slate-700">
+          Hvað gekk vel
+        </label>
+        <textarea
+          id="wins"
+          name="wins"
+          rows={3}
+          disabled={isSubmitting}
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+        />
       </div>
 
       <div>
         <label htmlFor="blockers" className="mb-1 block text-sm font-medium text-slate-700">
           Hindranir
         </label>
-        <textarea id="blockers" name="blockers" rows={3} className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
+        <textarea
+          id="blockers"
+          name="blockers"
+          rows={3}
+          disabled={isSubmitting}
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="decisionsNeeded" className="mb-1 block text-sm font-medium text-slate-700">
+          Hvaða ákvarðanir eða stuðning vantar
+        </label>
+        <textarea
+          id="decisionsNeeded"
+          name="decisionsNeeded"
+          rows={3}
+          disabled={isSubmitting}
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+        />
       </div>
 
       <div>
         <label htmlFor="nextSteps" className="mb-1 block text-sm font-medium text-slate-700">
           Næstu skref
         </label>
-        <textarea id="nextSteps" name="nextSteps" rows={3} className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm" />
+        <textarea
+          id="nextSteps"
+          name="nextSteps"
+          rows={3}
+          disabled={isSubmitting}
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="submittedBy" className="mb-1 block text-sm font-medium text-slate-700">
+          Sent inn af
+        </label>
+        <input
+          id="submittedBy"
+          name="submittedBy"
+          type="text"
+          disabled={isSubmitting}
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100"
+        />
       </div>
 
       <button
         type="submit"
-        className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+        disabled={isSubmitting || !hasTeams}
+        className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
       >
-        Vista púls
+        {isSubmitting ? "Sendi..." : "Vista púls"}
       </button>
 
       {submitted ? (
         <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
           Púls vistaður.
+        </p>
+      ) : null}
+
+      {errorMessage ? <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-800">{errorMessage}</p> : null}
+
+      {!hasTeams ? (
+        <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          Ekki er hægt að senda inn púls í þessari keyrslu.
         </p>
       ) : null}
     </form>

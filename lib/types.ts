@@ -23,10 +23,16 @@ export type Pulse = {
   submittedBy: string;
 };
 
+export type PulseFormStatus = "Græn" | "Gul" | "Rauð";
+
 export type NewPulseInput = {
   teamId: string;
-  status: Pulse["status"];
+  meetingDate: string;
+  status: PulseFormStatus;
+  goals: string;
+  wins: string;
   blockers: string;
+  decisionsNeeded: string;
   nextSteps: string;
-  summary: string;
+  submittedBy: string;
 };

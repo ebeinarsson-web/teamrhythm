@@ -33,6 +33,17 @@ AIRTABLE_BASE_ID=your_airtable_base_id
 - If `AIRTABLE_TOKEN` or `AIRTABLE_BASE_ID` is missing, mock data is used automatically.
 - If Airtable read fails, the app falls back to mock data and continues to run.
 
+## New pulse create flow (`/pulsar/nyr`)
+
+- Form submit is sent to server endpoint `POST /api/pulsar` (never directly to Airtable from client).
+- Server validates required fields:
+  - `Teymi`
+  - `Fundardagur`
+  - `Staða` (`Græn`, `Gul`, `Rauð`)
+- On success, a new record is created in Airtable table `Puls` with linked record in `Teymi`.
+- If Airtable env is missing, submit is not performed and user gets a calm message that submission is unavailable in that run.
+- If Airtable create fails, user gets a general error message and detailed error is logged server-side.
+
 ## Included pages
 
 - `/` - yfirlit (heildarfjoldi, staduyfirlit, tharfnast athygli, nyjustu pulsar)
