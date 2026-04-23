@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { formatDateIs } from "@/lib/date-format";
 import type { Team } from "@/lib/types";
 
 type Props = {
@@ -13,8 +14,13 @@ export default function NewPulseForm({ teams }: Props) {
   const formRef = useRef<HTMLFormElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [meetingDateValue, setMeetingDateValue] = useState("");
 
   const hasTeams = teams.length > 0;
+  const formattedMeetingDate = useMemo(() => {
+    if (!meetingDateValue) return "";
+    return formatDateIs(meetingDateValue);
+  }, [meetingDateValue]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -51,6 +57,7 @@ export default function NewPulseForm({ teams }: Props) {
       }
 
       formRef.current?.reset();
+      setMeetingDateValue("");
       router.push("/pulsar?saved=1");
       router.refresh();
     } catch {
@@ -96,26 +103,13 @@ export default function NewPulseForm({ teams }: Props) {
           type="date"
           required
           disabled={isSubmitting}
+          value={meetingDateValue}
+          onChange={(event) => setMeetingDateValue(event.target.value)}
           className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 disabled:bg-slate-100"
         />
-      </div>
-
-      <div>
-        <label htmlFor="status" className="mb-1.5 block text-sm font-medium text-slate-800">
-          Staða
-        </label>
-        <select
-          id="status"
-          name="status"
-          required
-          disabled={isSubmitting}
-          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 disabled:bg-slate-100"
-        >
-          <option value="">Veldu stöðu</option>
-          <option value="Græn">Græn</option>
-          <option value="Gul">Gul</option>
-          <option value="Rauð">Rauð</option>
-        </select>
+        <p className="mt-1.5 text-xs text-slate-500">
+          Dagsetning birtist á íslensku: {formattedMeetingDate || "Veldu dagsetningu"}
+        </p>
       </div>
 
       <div>
@@ -194,6 +188,24 @@ export default function NewPulseForm({ teams }: Props) {
           disabled={isSubmitting}
           className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 disabled:bg-slate-100"
         />
+      </div>
+
+      <div>
+        <label htmlFor="status" className="mb-1.5 block text-sm font-medium text-slate-800">
+          Staða
+        </label>
+        <select
+          id="status"
+          name="status"
+          required
+          disabled={isSubmitting}
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 disabled:bg-slate-100"
+        >
+          <option value="">Veldu stöðu</option>
+          <option value="Græn">Græn</option>
+          <option value="Gul">Gul</option>
+          <option value="Rauð">Rauð</option>
+        </select>
       </div>
 
       <button

@@ -48,7 +48,7 @@ AIRTABLE_BASE_ID=your_airtable_base_id
 ## Included pages
 
 - `/` - yfirlit (heildarfjöldi, stöðuyfirlit, þarfnast athygli, nýjustu púlsar)
-- `/pulsar` - listi af púlsum úr `Puls` með einfaldri síun eftir teymi, stöðu og leit
+- `/pulsar` - listi af púlsum úr `Puls` með einfaldri síun eftir teymi, stöðu og leit (heiti, teymi, markmið, hvað gekk vel, hindranir, næstu skref, sent inn af)
 - `/pulsar/nyr` - form sem sendir nýjan púls í Airtable þegar env er virkt
 - `/teymi` - listi af teymum úr `Teymi` með beinni leið í síaða púlsa (`/pulsar?team=...`)
 - `/solutions/teamrhythm` - lausnasíða fyrir TeamRhythm
@@ -67,6 +67,7 @@ AIRTABLE_BASE_ID=your_airtable_base_id
 ## Dagsetningarsnið
 
 - Dagsetningar í birtingu nota íslenskt snið `dd.mm.yyyy`.
+- Í `Nýr púls` er dagsetning valin með date input, með skýru íslensku display-hjálpartexta undir reitnum.
 
 ## Útgáfunúmer
 

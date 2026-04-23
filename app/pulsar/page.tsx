@@ -35,7 +35,10 @@ export default async function PulsarPage({
       getPulseDisplayTitle(pulse),
       teamById.get(pulse.teamId) ?? pulse.teamName,
       pulse.goals,
+      pulse.wins,
+      pulse.blockers,
       pulse.nextSteps,
+      pulse.submittedBy,
     ]
       .join(" ")
       .toLowerCase();
@@ -129,7 +132,7 @@ export default async function PulsarPage({
         {visiblePulses.length === 0 ? (
           <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-600">
-              {selectedTeam || selectedStatus
+              {selectedTeam || selectedStatus || searchQuery
                 ? "Engar púlsfærslur fundust fyrir valda síu."
                 : "Engar púlsfærslur fundust."}
             </p>
@@ -149,6 +152,7 @@ export default async function PulsarPage({
               </div>
               <p className="mt-1 text-xs text-slate-600 sm:text-sm">
                 {teamById.get(pulse.teamId) ?? pulse.teamName} - {formatDateIs(pulse.meetingDate)}
+                {pulse.submittedBy ? ` - ${pulse.submittedBy}` : ""}
               </p>
               <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 <p className="text-sm text-slate-700">
