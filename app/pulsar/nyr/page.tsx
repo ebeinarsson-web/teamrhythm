@@ -1,3 +1,4 @@
+import Link from "next/link";
 import NewPulseForm from "@/components/NewPulseForm";
 import { getTeamsForUser } from "@/lib/airtable";
 import { getCurrentUser } from "@/lib/auth";
@@ -16,8 +17,14 @@ export default async function NyrPulsPage() {
       {teams.length === 0 ? (
         <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <p className="text-sm text-slate-600">
-            Ekki er hægt að skrá nýjan púls fyrr en virkt teymi er tengt aðganginum þínum.
+            Ekki er hægt að skrá púls fyrr en þú átt að minnsta kosti eitt teymi. Stofnaðu teymi fyrst.
           </p>
+          <Link
+            href="/teymi/nytt"
+            className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800 sm:w-auto"
+          >
+            Stofna teymi
+          </Link>
         </article>
       ) : (
         <div>

@@ -37,8 +37,11 @@ AUTH_SECRET=your_auth_secret
   - `/pulsar`
   - `/pulsar/nyr`
   - `/teymi`
+  - `/teymi/nytt`
   - `/solutions/teamrhythm`
   - `/api/pulsar`
+  - `/api/teymi`
+  - `/api/teymi/archive`
 - Sign-in is handled via Google OAuth through NextAuth.
 - Sign-out is available in the header when a user is signed in.
 
@@ -55,6 +58,12 @@ For local and Vercel setup, configure Google OAuth callback URL to:
 - Team visibility is filtered by `Teymi.OwnerEmail` matching the current user email.
 - Archived teams (`Teymi.Archived = true`) are excluded from normal views.
 - Pulses are shown only when linked to teams owned by the current user.
+
+## Create and archive team
+
+- New team form lives at `/teymi/nytt` and submits to `POST /api/teymi`.
+- Server sets `OwnerEmail` from the signed-in user and `Archived` to false; client cannot override ownership.
+- Archive (“fela teymi”) uses `POST /api/teymi/archive` with `{ teamId }`; server verifies the user owns the team before setting `Archived` to true.
 
 ## New pulse create flow (`/pulsar/nyr`)
 
@@ -73,7 +82,8 @@ For local and Vercel setup, configure Google OAuth callback URL to:
 - `/` - yfirlit (heildarfjöldi, stöðuyfirlit, þarfnast athygli, nýjustu púlsar)
 - `/pulsar` - listi af púlsum úr `Puls` með einfaldri síun eftir teymi, stöðu og leit (heiti, teymi, markmið, hvað gekk vel, hindranir, næstu skref, sent inn af)
 - `/pulsar/nyr` - form sem sendir nýjan púls í Airtable þegar env er virkt
-- `/teymi` - listi af teymum úr `Teymi` með beinni leið í síaða púlsa (`/pulsar?team=...`)
+- `/teymi` - listi af teymum úr `Teymi` með beinni leið í síaða púlsa (`/pulsar?team=...`) og möguleika á að fela teymi
+- `/teymi/nytt` - stofna nýtt teymi (einfalt form)
 - `/solutions/teamrhythm` - lausnasíða fyrir TeamRhythm
 
 ## External app URL

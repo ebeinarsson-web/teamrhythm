@@ -8,6 +8,7 @@ const links = [
   { href: "/pulsar", label: "Púlsar" },
   { href: "/pulsar/nyr", label: "Nýr púls" },
   { href: "/teymi", label: "Teymi" },
+  { href: "/teymi/nytt", label: "Nýtt teymi" },
   { href: "/solutions/teamrhythm", label: "Lausnin" },
 ];
 

@@ -36,3 +36,9 @@ export type NewPulseInput = {
   nextSteps: string;
   submittedBy: string;
 };
+
+export type NewTeamInput = {
+  name: string;
+  meetingCadence: string;
+  notes: string;
+};

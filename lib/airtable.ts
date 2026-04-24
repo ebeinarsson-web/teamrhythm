@@ -1,4 +1,4 @@
-import type { NewPulseInput, Pulse, PulseFormStatus, Team } from "@/lib/types";
+import type { NewPulseInput, NewTeamInput, Pulse, PulseFormStatus, Team } from "@/lib/types";
 import { mockPulses, mockTeams } from "@/lib/mock-data";
 
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
@@ -96,6 +96,20 @@ async function fetchAirtableRecords(tableName: string): Promise<AirtableRecord[]
   return payload.records ?? [];
 }
 
+async function fetchAirtableRecordById(tableName: string, recordId: string): Promise<AirtableRecord | null> {
+  const url = `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${encodeURIComponent(tableName)}/${encodeURIComponent(recordId)}`;
+  const response = await fetch(url, {
+    headers: authHeaders(),
+    cache: "no-store",
+  });
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(`Airtable get record failed for ${tableName}/${recordId}: ${response.status}`);
+  }
+  const payload = (await response.json()) as { id: string; fields: Record<string, AirtableValue> };
+  return { id: payload.id, fields: payload.fields };
+}
+
 function isValidDateInput(value: string): boolean {
   if (!value) return false;
   const date = new Date(value);
@@ -148,6 +162,16 @@ function isOwnedActiveTeam(record: AirtableRecord, userEmail: string): boolean {
   const ownerEmail = normalizeEmail(toText(record.fields["OwnerEmail"]));
   const archived = toBoolean(record.fields["Archived"]);
   return Boolean(ownerEmail) && ownerEmail === userEmail && !archived;
+}
+
+function isTeamOwner(record: AirtableRecord, userEmail: string): boolean {
+  const ownerEmail = normalizeEmail(toText(record.fields["OwnerEmail"]));
+  return Boolean(ownerEmail) && ownerEmail === userEmail;
+}
+
+function validateNewTeamInput(input: NewTeamInput): string | null {
+  if (!input.name.trim()) return "Teymisnafn er krafist.";
+  return null;
 }
 
 export async function getTeamsForUser(userEmail: string | null | undefined): Promise<Team[]> {
@@ -378,4 +402,122 @@ export async function createPulseForUser(
 
 export async function createPulse(input: NewPulseInput): Promise<CreatePulseResult> {
   return createPulseForUser(null, input);
+}
+
+export type TeamMutationResult = { ok: true } | { ok: false; message: string };
+
+export async function createTeamForUser(
+  userEmail: string | null | undefined,
+  input: NewTeamInput,
+): Promise<TeamMutationResult> {
+  const normalizedUserEmail = normalizeEmail(userEmail);
+  if (!normalizedUserEmail) {
+    return { ok: false, message: "Ekki tókst að staðfesta aðgang. Vinsamlegast skráðu þig inn aftur." };
+  }
+
+  const validationError = validateNewTeamInput(input);
+  if (validationError) {
+    return { ok: false, message: validationError };
+  }
+
+  if (!hasAirtableConfig()) {
+    return {
+      ok: false,
+      message: "Innsending er ekki virk í þessari keyrslu. Vinsamlegast reyndu aftur í virku umhverfi.",
+    };
+  }
+
+  const ownerEmailStored = (userEmail ?? "").trim();
+  if (!ownerEmailStored) {
+    return { ok: false, message: "Ekki tókst að staðfesta aðgang. Vinsamlegast skráðu þig inn aftur." };
+  }
+
+  try {
+    const fields: Record<string, string | boolean> = {
+      Teymi: input.name.trim(),
+      OwnerEmail: ownerEmailStored,
+      Archived: false,
+      Virkt: true,
+    };
+    const cadence = input.meetingCadence.trim();
+    if (cadence) fields["Fundartaktur"] = cadence;
+    const notes = input.notes.trim();
+    if (notes) fields["Athugasemdir"] = notes;
+
+    const url = `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${encodeURIComponent(TEAMS_TABLE)}`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        records: [{ fields }],
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Airtable create team failed: ${response.status}`);
+    }
+
+    return { ok: true };
+  } catch (error) {
+    console.error("[teamrhythm] Team create failed.", error);
+    return {
+      ok: false,
+      message: "Ekki tókst að vista teymi í augnablikinu. Vinsamlegast reyndu aftur.",
+    };
+  }
+}
+
+export async function archiveTeamForUser(
+  userEmail: string | null | undefined,
+  teamId: string,
+): Promise<TeamMutationResult> {
+  const normalizedUserEmail = normalizeEmail(userEmail);
+  if (!normalizedUserEmail) {
+    return { ok: false, message: "Ekki tókst að staðfesta aðgang. Vinsamlegast skráðu þig inn aftur." };
+  }
+
+  const trimmedId = teamId.trim();
+  if (!trimmedId) {
+    return { ok: false, message: "Teymi vantar." };
+  }
+
+  if (!hasAirtableConfig()) {
+    return {
+      ok: false,
+      message: "Innsending er ekki virk í þessari keyrslu. Vinsamlegast reyndu aftur í virku umhverfi.",
+    };
+  }
+
+  try {
+    const record = await fetchAirtableRecordById(TEAMS_TABLE, trimmedId);
+    if (!record) {
+      return { ok: false, message: "Teymi fannst ekki." };
+    }
+    if (!isTeamOwner(record, normalizedUserEmail)) {
+      return { ok: false, message: "Þú hefur ekki aðgang að þessu teymi." };
+    }
+
+    const url = `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${encodeURIComponent(TEAMS_TABLE)}/${encodeURIComponent(trimmedId)}`;
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        fields: {
+          Archived: true,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Airtable archive team failed: ${response.status}`);
+    }
+
+    return { ok: true };
+  } catch (error) {
+    console.error("[teamrhythm] Team archive failed.", error);
+    return {
+      ok: false,
+      message: "Ekki tókst að fela teymi í augnablikinu. Vinsamlegast reyndu aftur.",
+    };
+  }
 }

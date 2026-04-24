@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ArchiveTeamButton from "@/components/ArchiveTeamButton";
 import { getPulsesForUser, getTeamsForUser } from "@/lib/airtable";
 import { formatDateIs } from "@/lib/date-format";
 import { getPulseDisplayTitle } from "@/lib/pulse-display";
@@ -18,7 +19,14 @@ const statusToneClass: Record<"green" | "yellow" | "red", string> = {
   red: "bg-rose-50 text-rose-700 ring-rose-200",
 };
 
-export default async function TeymiPage() {
+export default async function TeymiPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ created?: string }>;
+}) {
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const showCreatedMessage = resolvedSearchParams?.created === "1";
+
   const currentUser = await getCurrentUser();
   const [teams, pulses] = await Promise.all([
     getTeamsForUser(currentUser?.email),
@@ -36,15 +44,37 @@ export default async function TeymiPage() {
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-6 sm:py-8">
-      <h1 className="text-2xl font-semibold tracking-tight">Teymi</h1>
-      <p className="mt-2 text-sm text-slate-600">Yfirlit yfir teymi og stöðu þeirra.</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Teymi</h1>
+          <p className="mt-2 text-sm text-slate-600">Yfirlit yfir teymi og stöðu þeirra.</p>
+        </div>
+        <Link
+          href="/teymi/nytt"
+          className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800"
+        >
+          Nýtt teymi
+        </Link>
+      </div>
+
+      {showCreatedMessage ? (
+        <p className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+          Teymi var stofnað.
+        </p>
+      ) : null}
 
       <div className="mt-6 grid gap-4">
         {teams.length === 0 ? (
           <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-slate-600">
-              Engin virk teymi eru tengd aðganginum þínum enn. Þegar fyrsta teymi verður skráð birtist það hér.
+              Engin virk teymi eru tengd aðganginum þínum enn. Stofnaðu fyrsta teymið til að halda áfram.
             </p>
+            <Link
+              href="/teymi/nytt"
+              className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800 sm:w-auto"
+            >
+              Stofna teymi
+            </Link>
           </article>
         ) : (
           teams.map((team) => {
@@ -100,13 +130,14 @@ export default async function TeymiPage() {
                 <p className="mt-3 text-xs font-medium uppercase tracking-[0.08em] text-slate-500 sm:text-sm sm:normal-case sm:tracking-normal">
                   Skráðir púlsar: {pulseCountByTeam.get(team.id) ?? 0}
                 </p>
-                <div className="mt-3">
+                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                   <Link
                     href={`/pulsar?team=${encodeURIComponent(team.id)}`}
                     className="inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 sm:w-auto"
                   >
                     Sjá púlsa
                   </Link>
+                  <ArchiveTeamButton teamId={team.id} />
                 </div>
               </article>
             );
