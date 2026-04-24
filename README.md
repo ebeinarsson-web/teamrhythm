@@ -22,7 +22,28 @@ Copy `.env.example` to `.env.local` and fill in values:
 ```bash
 AIRTABLE_TOKEN=your_airtable_token
 AIRTABLE_BASE_ID=your_airtable_base_id
+AUTH_GOOGLE_ID=your_google_oauth_client_id
+AUTH_GOOGLE_SECRET=your_google_oauth_client_secret
+AUTH_SECRET=your_auth_secret
 ```
+
+## Sign-in and protected app
+
+- TeamRhythm is now a sign-in required app with Google-only authentication.
+- Unauthenticated users are redirected to `/sign-in`.
+- Protected routes include:
+  - `/`
+  - `/pulsar`
+  - `/pulsar/nyr`
+  - `/teymi`
+  - `/solutions/teamrhythm`
+  - `/api/pulsar`
+- Sign-in is handled via Google OAuth through NextAuth.
+- Sign-out is available in the header when a user is signed in.
+
+For local and Vercel setup, configure Google OAuth callback URL to:
+- `http://localhost:3000/api/auth/callback/google` (local)
+- `https://<your-vercel-domain>/api/auth/callback/google` (production)
 
 ## Read-only integration and fallback
 
