@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { getOverviewData } from "@/lib/airtable";
+import { getOverviewDataForUser } from "@/lib/airtable";
 import HomePulseSections from "@/components/HomePulseSections";
+import { getCurrentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const { pulses, attentionPulses, statusCounts, totalPulses } = await getOverviewData();
+  const currentUser = await getCurrentUser();
+  const { teams, pulses, attentionPulses, statusCounts, totalPulses } = await getOverviewDataForUser(currentUser?.email);
   const latestPulses = pulses.slice(0, 5);
   const topAttention = attentionPulses.slice(0, 5);
 
@@ -80,7 +82,16 @@ export default async function HomePage() {
         </article>
       </section>
 
-      <HomePulseSections topAttention={topAttention} latestPulses={latestPulses} />
+      {teams.length === 0 ? (
+        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="text-base font-semibold tracking-tight text-slate-900 sm:text-lg">Engin teymi fundust</h2>
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">
+            Það eru engin virk teymi skráð á aðganginn þinn enn. Næsta skref verður að stofna fyrsta teymið.
+          </p>
+        </section>
+      ) : (
+        <HomePulseSections topAttention={topAttention} latestPulses={latestPulses} />
+      )}
     </main>
   );
 }

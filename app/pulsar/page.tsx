@@ -1,6 +1,7 @@
-import { getPulses, getTeams } from "@/lib/airtable";
+import { getPulsesForUser, getTeamsForUser } from "@/lib/airtable";
 import { formatDateIs } from "@/lib/date-format";
 import { getPulseDisplayTitle } from "@/lib/pulse-display";
+import { getCurrentUser } from "@/lib/auth";
 
 const statusLabel: Record<string, string> = {
   green: "Græn",
@@ -26,7 +27,11 @@ export default async function PulsarPage({
   const selectedTeam = resolvedSearchParams?.team ?? "";
   const selectedStatus = resolvedSearchParams?.status ?? "";
   const searchQuery = (resolvedSearchParams?.q ?? "").trim().toLowerCase();
-  const [pulses, teams] = await Promise.all([getPulses(), getTeams()]);
+  const currentUser = await getCurrentUser();
+  const [pulses, teams] = await Promise.all([
+    getPulsesForUser(currentUser?.email),
+    getTeamsForUser(currentUser?.email),
+  ]);
   const teamById = new Map(teams.map((team) => [team.id, team.name]));
   const visiblePulses = pulses.filter((pulse) => {
     const teamMatches = !selectedTeam || pulse.teamId === selectedTeam;
@@ -134,7 +139,9 @@ export default async function PulsarPage({
             <p className="text-sm text-slate-600">
               {selectedTeam || selectedStatus || searchQuery
                 ? "Engar púlsfærslur fundust fyrir valda síu."
-                : "Engar púlsfærslur fundust."}
+                : teams.length === 0
+                  ? "Engir púlsar eru sýnilegir enn þar sem engin virk teymi eru tengd aðganginum þínum."
+                  : "Engar púlsfærslur fundust."}
             </p>
           </article>
         ) : (

@@ -46,6 +46,10 @@ function toBoolean(value: AirtableValue): boolean {
   return false;
 }
 
+function normalizeEmail(value: string | null | undefined): string {
+  return (value ?? "").trim().toLowerCase();
+}
+
 function normalizeStatus(value: string): Pulse["status"] {
   const normalized = value.toLowerCase().trim();
   if (normalized === "green" || normalized === "graen" || normalized === "græn") return STATUS_GREEN;
@@ -129,6 +133,41 @@ export async function getTeams(): Promise<Team[]> {
   }
 }
 
+function mapTeamRecord(record: AirtableRecord): Team {
+  return {
+    id: record.id,
+    name: toText(record.fields["Teymi"]) || "Ónefnt teymi",
+    isActive: toBoolean(record.fields["Virkt"]),
+    contact: toText(record.fields["Tengiliður"]) || "Óskráð",
+    meetingCadence: toText(record.fields["Fundartaktur"]) || "Ekki skilgreint",
+    notes: toText(record.fields["Athugasemdir"]),
+  };
+}
+
+function isOwnedActiveTeam(record: AirtableRecord, userEmail: string): boolean {
+  const ownerEmail = normalizeEmail(toText(record.fields["OwnerEmail"]));
+  const archived = toBoolean(record.fields["Archived"]);
+  return Boolean(ownerEmail) && ownerEmail === userEmail && !archived;
+}
+
+export async function getTeamsForUser(userEmail: string | null | undefined): Promise<Team[]> {
+  const normalizedUserEmail = normalizeEmail(userEmail);
+  if (!normalizedUserEmail) return [];
+
+  if (!hasAirtableConfig()) {
+    console.info("[teamrhythm] Airtable env missing, returning empty teams for user scope.");
+    return [];
+  }
+
+  try {
+    const records = await fetchAirtableRecords(TEAMS_TABLE);
+    return records.filter((record) => isOwnedActiveTeam(record, normalizedUserEmail)).map(mapTeamRecord);
+  } catch (error) {
+    console.warn("[teamrhythm] Team fetch failed for user scope.", error);
+    return [];
+  }
+}
+
 export async function getPulses(): Promise<Pulse[]> {
   if (!hasAirtableConfig()) {
     console.info("[teamrhythm] Airtable env missing, using mock pulses.");
@@ -176,8 +215,75 @@ export async function getPulses(): Promise<Pulse[]> {
   }
 }
 
+export async function getPulsesForUser(userEmail: string | null | undefined): Promise<Pulse[]> {
+  const ownedTeams = await getTeamsForUser(userEmail);
+  if (ownedTeams.length === 0) return [];
+
+  if (!hasAirtableConfig()) {
+    console.info("[teamrhythm] Airtable env missing, returning empty pulses for user scope.");
+    return [];
+  }
+
+  const ownedTeamIds = new Set(ownedTeams.map((team) => team.id));
+  const ownedTeamNameById = new Map(ownedTeams.map((team) => [team.id, team.name]));
+
+  try {
+    const pulseRecords = await fetchAirtableRecords(PULSE_TABLE);
+    const normalized = pulseRecords
+      .map((record) => {
+        const linkedTeamIds = toLinkedIds(record.fields["Teymi"]);
+        const linkedTeamId = linkedTeamIds[0] ?? "";
+        const createdDate = toText(record.fields["Skráð dags."]) || todayIsoDate();
+        const meetingDate = toText(record.fields["Fundardagur"]) || createdDate;
+        const fallbackTeamField = toText(record.fields["Teymi"]);
+
+        return {
+          id: record.id,
+          title: toText(record.fields["Púls"]) || `Púls ${meetingDate}`,
+          teamId: linkedTeamId || "unknown",
+          teamName: ownedTeamNameById.get(linkedTeamId) || fallbackTeamField || "Óþekkt teymi",
+          createdDate,
+          meetingDate,
+          status: normalizeStatus(toText(record.fields["Staða"])),
+          goals: toText(record.fields["Helstu markmið"]),
+          wins: toText(record.fields["Hvað gekk vel"]),
+          blockers: toText(record.fields["Hvað tefur framvindu"]),
+          decisionsNeeded: toText(record.fields["Hvaða ákvarðanir eða stuðning vantar"]),
+          nextSteps: toText(record.fields["Næstu skref"]),
+          submittedBy: toText(record.fields["Sent inn af"]),
+        } satisfies Pulse;
+      })
+      .filter((pulse) => ownedTeamIds.has(pulse.teamId));
+
+    return normalized.sort(comparePulsesNewestFirst);
+  } catch (error) {
+    console.warn("[teamrhythm] Pulse fetch failed for user scope.", error);
+    return [];
+  }
+}
+
 export async function getOverviewData() {
   const [teams, pulses] = await Promise.all([getTeams(), getPulses()]);
+  const sortedPulses = [...pulses].sort(comparePulsesNewestFirst);
+  const attentionPulses = sortedPulses.filter((pulse) => pulse.status === STATUS_YELLOW || pulse.status === STATUS_RED);
+
+  const statusCounts = {
+    green: pulses.filter((pulse) => pulse.status === STATUS_GREEN).length,
+    yellow: pulses.filter((pulse) => pulse.status === STATUS_YELLOW).length,
+    red: pulses.filter((pulse) => pulse.status === STATUS_RED).length,
+  };
+
+  return {
+    teams,
+    pulses: sortedPulses,
+    attentionPulses,
+    statusCounts,
+    totalPulses: pulses.length,
+  };
+}
+
+export async function getOverviewDataForUser(userEmail: string | null | undefined) {
+  const [teams, pulses] = await Promise.all([getTeamsForUser(userEmail), getPulsesForUser(userEmail)]);
   const sortedPulses = [...pulses].sort(comparePulsesNewestFirst);
   const attentionPulses = sortedPulses.filter((pulse) => pulse.status === STATUS_YELLOW || pulse.status === STATUS_RED);
 
@@ -200,7 +306,15 @@ export type CreatePulseResult =
   | { ok: true; mode: "airtable" | "mock" }
   | { ok: false; message: string };
 
-export async function createPulse(input: NewPulseInput): Promise<CreatePulseResult> {
+export async function createPulseForUser(
+  userEmail: string | null | undefined,
+  input: NewPulseInput,
+): Promise<CreatePulseResult> {
+  const normalizedUserEmail = normalizeEmail(userEmail);
+  if (!normalizedUserEmail) {
+    return { ok: false, message: "Ekki tókst að staðfesta aðgang. Vinsamlegast skráðu þig inn aftur." };
+  }
+
   const validationError = validatePulseInput(input);
   if (validationError) {
     return { ok: false, message: validationError };
@@ -216,11 +330,13 @@ export async function createPulse(input: NewPulseInput): Promise<CreatePulseResu
   try {
     const teamRecords = await fetchAirtableRecords(TEAMS_TABLE);
     const matchingTeam = teamRecords.find(
-      (record) => record.id === input.teamId || toText(record.fields["Teymi"]) === input.teamId,
+      (record) =>
+        isOwnedActiveTeam(record, normalizedUserEmail) &&
+        (record.id === input.teamId || toText(record.fields["Teymi"]) === input.teamId),
     );
 
     if (!matchingTeam) {
-      return { ok: false, message: "Ekki tókst að finna gilt teymi fyrir innsendingu." };
+      return { ok: false, message: "Þú hefur ekki aðgang að valda teyminu." };
     }
 
     const url = `${AIRTABLE_API_URL}/${AIRTABLE_BASE_ID}/${encodeURIComponent(PULSE_TABLE)}`;
@@ -258,4 +374,8 @@ export async function createPulse(input: NewPulseInput): Promise<CreatePulseResu
       message: "Ekki tókst að vista púls í augnablikinu. Vinsamlegast reyndu aftur.",
     };
   }
+}
+
+export async function createPulse(input: NewPulseInput): Promise<CreatePulseResult> {
+  return createPulseForUser(null, input);
 }

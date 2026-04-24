@@ -1,6 +1,7 @@
-import { createPulse } from "@/lib/airtable";
+import { createPulseForUser } from "@/lib/airtable";
 import type { NewPulseInput } from "@/lib/types";
 import { NextResponse } from "next/server";
+import { auth } from "@/auth";
 
 function asText(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
@@ -8,6 +9,15 @@ function asText(value: unknown): string {
 
 export async function POST(request: Request) {
   try {
+    const session = await auth();
+    const userEmail = session?.user?.email;
+    if (!userEmail) {
+      return NextResponse.json(
+        { ok: false, message: "Ekki tókst að staðfesta aðgang. Vinsamlegast skráðu þig inn aftur." },
+        { status: 401 },
+      );
+    }
+
     const payload = (await request.json()) as Partial<NewPulseInput>;
     const input: NewPulseInput = {
       teamId: asText(payload.teamId),
@@ -21,7 +31,7 @@ export async function POST(request: Request) {
       submittedBy: asText(payload.submittedBy),
     };
 
-    const result = await createPulse(input);
+    const result = await createPulseForUser(userEmail, input);
     if (!result.ok) {
       return NextResponse.json({ ok: false, message: result.message }, { status: 400 });
     }

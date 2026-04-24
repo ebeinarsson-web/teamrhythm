@@ -31,6 +31,7 @@ AUTH_SECRET=your_auth_secret
 
 - TeamRhythm is now a sign-in required app with Google-only authentication.
 - Unauthenticated users are redirected to `/sign-in`.
+- Data is user-scoped by the signed-in Google email.
 - Protected routes include:
   - `/`
   - `/pulsar`
@@ -51,8 +52,9 @@ For local and Vercel setup, configure Google OAuth callback URL to:
 - Technical Airtable table names used in code:
   - `Teymi`
   - `Puls`
-- If `AIRTABLE_TOKEN` or `AIRTABLE_BASE_ID` is missing, mock data is used automatically.
-- If Airtable read fails, the app falls back to mock data and continues to run.
+- Team visibility is filtered by `Teymi.OwnerEmail` matching the current user email.
+- Archived teams (`Teymi.Archived = true`) are excluded from normal views.
+- Pulses are shown only when linked to teams owned by the current user.
 
 ## New pulse create flow (`/pulsar/nyr`)
 
@@ -61,9 +63,9 @@ For local and Vercel setup, configure Google OAuth callback URL to:
   - `Teymi`
   - `Fundardagur`
   - `Staða` (`Græn`, `Gul`, `Rauð`)
+- Server also validates ownership: the selected team must be owned by the current user and not archived.
 - On success, a new record is created in Airtable table `Puls` with linked record in `Teymi`.
 - After successful submit, the user is redirected to `/pulsar` with a lightweight success confirmation.
-- If Airtable env is missing, submit is not performed and user gets a calm message that submission is unavailable in that run.
 - If Airtable create fails, user gets a general error message and detailed error is logged server-side.
 
 ## Included pages

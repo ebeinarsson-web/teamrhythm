@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { getPulses, getTeams } from "@/lib/airtable";
+import { getPulsesForUser, getTeamsForUser } from "@/lib/airtable";
 import { formatDateIs } from "@/lib/date-format";
 import { getPulseDisplayTitle } from "@/lib/pulse-display";
+import { getCurrentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,11 @@ const statusToneClass: Record<"green" | "yellow" | "red", string> = {
 };
 
 export default async function TeymiPage() {
-  const [teams, pulses] = await Promise.all([getTeams(), getPulses()]);
+  const currentUser = await getCurrentUser();
+  const [teams, pulses] = await Promise.all([
+    getTeamsForUser(currentUser?.email),
+    getPulsesForUser(currentUser?.email),
+  ]);
   const pulseCountByTeam = new Map<string, number>();
   const latestPulseByTeam = new Map<string, (typeof pulses)[number]>();
 
@@ -37,7 +42,9 @@ export default async function TeymiPage() {
       <div className="mt-6 grid gap-4">
         {teams.length === 0 ? (
           <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-600">Engin teymi fundust í augnablikinu.</p>
+            <p className="text-sm text-slate-600">
+              Engin virk teymi eru tengd aðganginum þínum enn. Þegar fyrsta teymi verður skráð birtist það hér.
+            </p>
           </article>
         ) : (
           teams.map((team) => {

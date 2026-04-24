@@ -222,7 +222,7 @@ export default function NewPulseForm({ teams }: Props) {
 
       {!hasTeams ? (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-sm text-amber-800">
-          Ekki er hægt að senda inn púls í þessari keyrslu.
+          Ekki er hægt að skrá púls fyrr en virkt teymi er tengt aðganginum þínum.
         </p>
       ) : null}
     </form>
