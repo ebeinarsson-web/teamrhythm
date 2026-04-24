@@ -39,6 +39,7 @@ export type NewPulseInput = {
 
 export type NewTeamInput = {
   name: string;
+  contact: string;
   meetingCadence: string;
   notes: string;
 };

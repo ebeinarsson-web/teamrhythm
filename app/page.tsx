@@ -24,7 +24,7 @@ export default async function HomePage() {
         </p>
       </section>
 
-      <section className="grid gap-3 sm:grid-cols-2 sm:gap-5">
+      <section className="grid gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
         <Link
           href="/pulsar"
           className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm transition-colors hover:bg-slate-50 sm:p-5"
@@ -50,6 +50,15 @@ export default async function HomePage() {
           <h2 className="text-base font-semibold tracking-tight text-slate-900 sm:text-lg">Teymi</h2>
           <p className="mt-2 text-sm leading-relaxed text-slate-600">
             Sjá yfirlit yfir teymi og nýjustu stöðutökur þeirra.
+          </p>
+        </Link>
+        <Link
+          href="/teymi/nytt"
+          className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm transition-colors hover:bg-slate-50 sm:p-5"
+        >
+          <h2 className="text-base font-semibold tracking-tight text-slate-900 sm:text-lg">Nýtt teymi</h2>
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">
+            Stofnaðu nýtt teymi til að byrja að skrá púlsa og halda utan um stöðu þess.
           </p>
         </Link>
         <Link

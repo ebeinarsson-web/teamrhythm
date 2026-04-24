@@ -62,6 +62,7 @@ For local and Vercel setup, configure Google OAuth callback URL to:
 ## Create and archive team
 
 - New team form lives at `/teymi/nytt` and submits to `POST /api/teymi`.
+- Form includes optional `Tengiliður` and a `Fundartaktur` dropdown whose values must match the Airtable single-select options (see `lib/team-meeting-cadence.ts`).
 - Server sets `OwnerEmail` from the signed-in user and `Archived` to false; client cannot override ownership.
 - Archive (“fela teymi”) uses `POST /api/teymi/archive` with `{ teamId }`; server verifies the user owns the team before setting `Archived` to true.
 

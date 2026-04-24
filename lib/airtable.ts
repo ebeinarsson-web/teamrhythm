@@ -1,4 +1,5 @@
 import type { NewPulseInput, NewTeamInput, Pulse, PulseFormStatus, Team } from "@/lib/types";
+import { isAllowedMeetingCadence } from "@/lib/team-meeting-cadence";
 import { mockPulses, mockTeams } from "@/lib/mock-data";
 
 const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
@@ -171,6 +172,31 @@ function isTeamOwner(record: AirtableRecord, userEmail: string): boolean {
 
 function validateNewTeamInput(input: NewTeamInput): string | null {
   if (!input.name.trim()) return "Teymisnafn er krafist.";
+  if (!isAllowedMeetingCadence(input.meetingCadence)) {
+    return "Fundartaktur er ógilt. Veldu eina möguleika úr listanum eða skildu reitinn eftir auðan.";
+  }
+  return null;
+}
+
+async function mapAirtableTeamCreateError(response: Response): Promise<string | null> {
+  try {
+    const body = (await response.json()) as {
+      error?: { type?: string; message?: string };
+    };
+    const type = body.error?.type ?? "";
+    const msg = (body.error?.message ?? "").toLowerCase();
+    if (
+      type === "INVALID_MULTIPLE_CHOICE_OPTIONS" ||
+      type === "INVALID_VALUE_FOR_COLUMN" ||
+      msg.includes("fundartaktur") ||
+      msg.includes("single select") ||
+      msg.includes("choice")
+    ) {
+      return "Fundartaktur passar ekki við tiltök í kerfinu. Veldu eina möguleika úr listanum.";
+    }
+  } catch {
+    return null;
+  }
   return null;
 }
 
@@ -439,6 +465,8 @@ export async function createTeamForUser(
       Archived: false,
       Virkt: true,
     };
+    const contact = input.contact.trim();
+    if (contact) fields["Tengiliður"] = contact;
     const cadence = input.meetingCadence.trim();
     if (cadence) fields["Fundartaktur"] = cadence;
     const notes = input.notes.trim();
@@ -454,7 +482,14 @@ export async function createTeamForUser(
     });
 
     if (!response.ok) {
-      throw new Error(`Airtable create team failed: ${response.status}`);
+      const airtableHint = await mapAirtableTeamCreateError(response);
+      console.error("[teamrhythm] Team create failed.", response.status);
+      return {
+        ok: false,
+        message:
+          airtableHint ??
+          "Ekki tókst að vista teymi í augnablikinu. Athugaðu reitina og reyndu aftur.",
+      };
     }
 
     return { ok: true };
@@ -462,7 +497,7 @@ export async function createTeamForUser(
     console.error("[teamrhythm] Team create failed.", error);
     return {
       ok: false,
-      message: "Ekki tókst að vista teymi í augnablikinu. Vinsamlegast reyndu aftur.",
+      message: "Ekki tókst að vista teymi í augnablikinu. Athugaðu reitina og reyndu aftur.",
     };
   }
 }

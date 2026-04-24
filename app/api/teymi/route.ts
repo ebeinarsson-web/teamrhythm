@@ -21,6 +21,7 @@ export async function POST(request: Request) {
     const payload = (await request.json()) as Partial<NewTeamInput>;
     const input: NewTeamInput = {
       name: asText(payload.name),
+      contact: asText(payload.contact),
       meetingCadence: asText(payload.meetingCadence),
       notes: asText(payload.notes),
     };

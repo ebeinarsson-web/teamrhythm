@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { TEAM_MEETING_CADENCE_OPTIONS } from "@/lib/team-meeting-cadence";
 
 export default function NewTeamForm() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function NewTeamForm() {
     const formData = new FormData(form);
     const payload = {
       name: String(formData.get("name") ?? ""),
+      contact: String(formData.get("contact") ?? ""),
       meetingCadence: String(formData.get("meetingCadence") ?? ""),
       notes: String(formData.get("notes") ?? ""),
     };
@@ -67,17 +69,36 @@ export default function NewTeamForm() {
       </div>
 
       <div>
+        <label htmlFor="contact" className="mb-1.5 block text-sm font-medium text-slate-800">
+          Tengiliður <span className="font-normal text-slate-500">(valfrjálst)</span>
+        </label>
+        <input
+          id="contact"
+          name="contact"
+          type="text"
+          autoComplete="name"
+          disabled={isSubmitting}
+          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 disabled:bg-slate-100"
+        />
+      </div>
+
+      <div>
         <label htmlFor="meetingCadence" className="mb-1.5 block text-sm font-medium text-slate-800">
           Fundartaktur <span className="font-normal text-slate-500">(valfrjálst)</span>
         </label>
-        <input
+        <select
           id="meetingCadence"
           name="meetingCadence"
-          type="text"
           disabled={isSubmitting}
-          placeholder="Til dæmis vikulega"
           className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 disabled:bg-slate-100"
-        />
+        >
+          <option value="">Veldu fundartakt…</option>
+          {TEAM_MEETING_CADENCE_OPTIONS.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div>
